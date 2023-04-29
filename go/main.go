@@ -1,8 +1,8 @@
 package main
 
 import (
-	"crud/models"
-	"crud/routes"
+	"jwt/models"
+	"jwt/routes"
 )
 
 

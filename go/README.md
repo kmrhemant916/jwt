@@ -1,9 +1,9 @@
-# CRUD
+# jwt
 
 ## Initilize the go modules
 
 ```sh
-go mod init crud
+go mod init jwt
 go get -u github.com/gin-gonic/gin
 ```
 
@@ -16,11 +16,11 @@ https://zetcode.com/golang/mysql/
 
 
 
-<https://dev.to/yanoandri/database-handling-with-golang-gorm-crud-handling-4c66>
+<https://dev.to/yanoandri/database-handling-with-golang-gorm-jwt-handling-4c66>
 
 ## Read go package docs
 
 <https://www.makeuseof.com/go-godoc-document-code-automatically/>
 
 
-https://github.com/ThinleyN/toDoGolang/tree/master/bookCRUD
+https://github.com/ThinleyN/toDoGolang/tree/master/bookjwt

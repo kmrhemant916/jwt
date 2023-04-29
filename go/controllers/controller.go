@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"crud/models"
+	"jwt/models"
 	"net/http"
 
 	"github.com/gin-gonic/gin"

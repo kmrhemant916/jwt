@@ -1,7 +1,7 @@
 package routes
 
 import (
-	"crud/controllers"
+	"jwt/controllers"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
