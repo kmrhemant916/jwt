@@ -3,8 +3,10 @@ package controllers
 import (
 	"jwt/models"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -18,6 +20,13 @@ type UserInputResponse struct {
 	Email string `json:"email"`
 	ID uuid.UUID `json:"id"`
 }
+
+type Claims struct {
+	Username string `json:"username"`
+	jwt.RegisteredClaims
+}
+
+var jwtKey = []byte("my_secret_key")
 
 func Register(c *gin.Context) {
 	var input UserInput
@@ -37,53 +46,34 @@ func Register(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"data": response})
 }
 
-func GetUser(c *gin.Context) {
-	db := c.MustGet("db").(*gorm.DB)
-	var user models.User
-	if err := db.Where("id = ?", c.Param("id")).First(&user).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Record not found!"})
-		return
-	}
-	db.Find(&user)
-	response := UserInputResponse{ID: user.ID, Email: user.Email}
-	c.JSON(http.StatusOK, gin.H{"data": response})
-}
-
-func DeleteUser(c *gin.Context) {
-	db := c.MustGet("db").(*gorm.DB)
-	var user models.User
-	if err := db.Where("id = ?", c.Param("id")).First(&user).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Record not found!"})
-		return
-	}
-	db.Delete(&user)
-	c.JSON(http.StatusOK, gin.H{"data": true})
-}
-
-func GetUsers(c *gin.Context) {
-	db := c.MustGet("db").(*gorm.DB)
-	var users []models.User
-	db.Find(&users)
-	response := []UserInputResponse{}
-	for _, user := range users {
-		response = append(response, UserInputResponse{user.Email, user.ID})
-	}
-	c.JSON(http.StatusOK, gin.H{"data": response})
-}
-
-func UpdateUser(c *gin.Context) {
-	db := c.MustGet("db").(*gorm.DB)
-	var user models.User
-	if err := db.Where("id = ?", c.Param("id")).First(&user).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Record not found!"})
-		return
-	}
+func Login(c *gin.Context) {
 	var input UserInput
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	update := models.User{ID: user.ID, Email: input.Email, Password: input.Password}
-	db.Save(&update)
-	c.JSON(http.StatusOK, gin.H{"data": "Record updated"})
+	db := c.MustGet("db").(*gorm.DB)
+	var user models.User
+	if err := db.Where("email = ?",input.Email).First(&user).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "User doesn't exist"})
+		return
+	}
+	if input.Password != user.Password {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Wrong password"})
+		return
+	}
+	expirationTime := time.Now().Add(5 * time.Minute)
+	claims := &Claims{
+		Username: input.Email,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(expirationTime),
+		},
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	tokenString, err := token.SignedString(jwtKey)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"token": tokenString})
 }

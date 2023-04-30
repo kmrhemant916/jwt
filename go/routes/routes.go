@@ -14,9 +14,6 @@ func SetupRoutes(db *gorm.DB) (*gin.Engine){
 		c.Set("db", db)
 	})
 	router.POST("/register", controllers.Register)
-	router.GET("/user/:id", controllers.GetUser)
-	router.GET("/users", controllers.GetUsers)
-	router.DELETE("/user/:id", controllers.DeleteUser)
-	router.PATCH("/user/:id", controllers.UpdateUser)
+	router.POST("/login", controllers.Login)
 	return router
 }
