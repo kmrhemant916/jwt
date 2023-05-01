@@ -9,3 +9,7 @@ type User struct {
 	Email  string `gorm:"unique" json:"email"`
 	Password string `json:"password"`
 }
+
+type Token struct {
+	Token string `json:"token"`
+}

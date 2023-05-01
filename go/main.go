@@ -12,7 +12,7 @@ func main() {
 		panic(err)
 	}
 	db.AutoMigrate(&models.User{})
+	db.AutoMigrate(&models.Token{})
 	router := routes.SetupRoutes(db)
 	router.Run()
-
 }
