@@ -12,8 +12,8 @@ import (
 )
 
 type UserInput struct {
-	Email  string `gorm:"unique" json:"email"`
-	Password string `json:"password"`
+	Email  string `gorm:"unique" json:"email" binding:"required"`
+	Password string `json:"password" binding:"required"`
 }
 
 type UserInputResponse struct {
