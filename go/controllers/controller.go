@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"jwt/models"
 	"net/http"
 	"time"
@@ -76,4 +77,34 @@ func Login(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"token": tokenString})
+}
+
+func Welcome(c *gin.Context) {
+	token := c.Request.Header.Get("x-auth-token")
+	if token == "" {
+		c.JSON(http.StatusForbidden, gin.H{"error": "JWT is missing"})
+		return
+	}
+	claims := &Claims{}
+	tkn, err := jwt.ParseWithClaims(token, claims, func(token *jwt.Token) (interface{}, error) {
+		return jwtKey, nil
+	})
+	fmt.Println(time.Second, time.Until(claims.ExpiresAt.Time))
+	if err != nil {
+		if time.Second > time.Until(claims.ExpiresAt.Time){
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "JWT is expired"})
+			return
+		}
+		if err == jwt.ErrSignatureInvalid {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "JWT signature is invalid"})
+			return
+		}
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Bad request"})
+		return
+	}
+	if !tkn.Valid {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid JWT token"})
+		return
+	}
+	c.JSON(http.StatusBadRequest, gin.H{"message": "Welcome "+claims.Username})
 }
