@@ -79,11 +79,7 @@ func Login(c *gin.Context) {
 }
 
 func Logout(c *gin.Context) {
-	token := c.Request.Header.Get("x-auth-token")
-	if token == "" {
-		c.JSON(http.StatusForbidden, gin.H{"message": "JWT is missing"})
-		return
-	}
+	token := c.GetString("jwt")
 	db := c.MustGet("db").(*gorm.DB)
 	result := db.Create(&models.Token{Token: token})
 	if result.Error != nil {
@@ -94,11 +90,7 @@ func Logout(c *gin.Context) {
 }
 
 func Welcome(c *gin.Context) {
-	token := c.Request.Header.Get("x-auth-token")
-	if token == "" {
-		c.JSON(http.StatusForbidden, gin.H{"message": "JWT is missing"})
-		return
-	}
+	token := c.GetString("jwt")
 	var revokeToken models.Token
 	db := c.MustGet("db").(*gorm.DB)
 	if err := db.Where("token = ?",token).First(&revokeToken).Error; err == nil {
