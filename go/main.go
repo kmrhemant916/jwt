@@ -11,8 +11,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	db.AutoMigrate(&models.User{})
-	db.AutoMigrate(&models.Token{})
+	models.DatabaseMigration(db)
 	router := routes.SetupRoutes(db)
 	router.Run()
 }
