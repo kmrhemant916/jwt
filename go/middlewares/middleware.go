@@ -6,9 +6,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func AuthHeader() gin.HandlerFunc{
+func AuthHeader(header string) gin.HandlerFunc{
   return func(c *gin.Context) {
-	token := c.Request.Header.Get("x-auth-token")
+	token := c.Request.Header.Get(header)
 	if token == "" {
 		c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"message": "JWT is missing"})
 		return

@@ -8,16 +8,20 @@ import (
 	"gorm.io/gorm"
 )
 
+const (
+	HEADER = "x-auth-token"
+)
 
 func SetupRoutes(db *gorm.DB) (*gin.Engine){
 	router := gin.Default()
 	router.Use(func(c *gin.Context) {
 		c.Set("db", db)
 	})
-	router.Use(middlewares.AuthHeader())
 	router.POST("/register", controllers.Register)
 	router.POST("/login", controllers.Login)
-	router.POST("/logout", controllers.Logout)
-	router.GET("/welcome", controllers.Welcome)
+	protectedRoutes := router.Group("/api")
+	protectedRoutes.Use(middlewares.AuthHeader(HEADER))
+	protectedRoutes.POST("/logout", controllers.Logout)
+	protectedRoutes.GET("/welcome", controllers.Welcome)
 	return router
 }
