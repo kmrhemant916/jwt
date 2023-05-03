@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/google/uuid"
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
@@ -35,7 +36,8 @@ func Register(c *gin.Context) {
 		return
 	}
 	id := uuid.New()
-	user := models.User{ID: id, Email: input.Email, Password: input.Password}
+	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.DefaultCost)
+	user := models.User{ID: id, Email: input.Email, Password: string(hashedPassword)}
 	db := c.MustGet("db").(*gorm.DB)
 	result := db.Create(&user)
 	if result.Error != nil {
@@ -58,7 +60,8 @@ func Login(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"message": "User doesn't exist"})
 		return
 	}
-	if input.Password != user.Password {
+	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(input.Password))
+	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"message": "Wrong password"})
 		return
 	}
